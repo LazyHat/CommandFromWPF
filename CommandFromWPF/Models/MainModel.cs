@@ -1,7 +1,7 @@
-﻿using MaterialDesignThemes.Wpf.Converters;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Diagnostics;
+using System.Threading;
 using System.Windows.Controls;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace CommandFromWPF
 {
@@ -18,11 +18,11 @@ namespace CommandFromWPF
                 dialog.Title = "Select Folder";
                 dialog.IsFolderPicker = true;
                 if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                {
                     FolderPath = dialog.FileName;
-                }
+                else
+                    return;
             }
-            Process.Start("cmd", "%comspec% /C \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\"&&code " + FolderPath + " &&exit");
+            StartCmdProcess(FolderPath);
             if (BakPath != FolderPath)
             {
                 BakPath = FolderPath;
@@ -30,7 +30,7 @@ namespace CommandFromWPF
         }
         public static void Button2Click()
         {
-            Process.Start("cmd", "%comspec% /C \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\"&&code " + BakPath + " &&exit");
+            StartCmdProcess(BakPath);
         }
         public static string GetButtonText()
         {
@@ -42,7 +42,7 @@ namespace CommandFromWPF
             {
                 case 0:
                     return MainP;
-                    case 1:
+                case 1:
                     return SecP;
                 default:
                     return MainP;
@@ -55,6 +55,13 @@ namespace CommandFromWPF
         public static bool BakPathExist()
         {
             return BakPath != "";
+        }
+        private static void StartCmdProcess(string path)
+        {
+            var p = Process.Start("cmd", "%comspec% /C \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\VsDevCmd.bat\"&&cd " + path + "&&code ." /* + " &&exit 0"*/);
+            Thread.Sleep(2000);
+            if(!p.HasExited)
+                p.Kill();
         }
     }
 }
